@@ -1,0 +1,33 @@
+{
+  "name": "ixonae-utils",
+  "version": "0.1.0",
+  "description": "Browser-based utility tools — watermarking, steganography, and EXIF metadata editing. Runs fully offline.",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ixonae/utils.git"
+  },
+  "keywords": [
+    "watermark",
+    "steganography",
+    "exif",
+    "image-tools",
+    "browser",
+    "offline"
+  ],
+  "author": "Ixonae",
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ixonae/utils/issues"
+  },
+  "homepage": "https://github.com/ixonae/utils#readme",
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.1.1",
+    "vitest": "4.1.1"
+  }
+}

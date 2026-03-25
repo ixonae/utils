@@ -1,0 +1,154 @@
+/* EXIF tool specific styles */
+
+.exif-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.exif-table thead th {
+    text-align: left;
+    padding: 0.5rem 0.4rem;
+    border-bottom: 2px solid var(--color-border-light);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    letter-spacing: 0.03em;
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 1;
+}
+
+.exif-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.exif-table tbody tr:hover {
+    background: #f8f9ff;
+}
+
+.exif-table td {
+    padding: 0.35rem 0.4rem;
+    vertical-align: top;
+}
+
+.exif-col-check {
+    width: 30px;
+    text-align: center;
+}
+
+.exif-col-id {
+    width: 60px;
+}
+
+.exif-group-row td {
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--color-accent);
+    padding: 0.7rem 0.4rem 0.3rem;
+    border-bottom: 1.5px solid var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.exif-group-row:hover {
+    background: transparent !important;
+}
+
+.exif-tag-name {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.exif-ifd-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    color: #999;
+    background: #f0f0f0;
+    padding: 0.05rem 0.35rem;
+    border-radius: 3px;
+    margin-left: 0.4rem;
+    font-weight: 400;
+    vertical-align: middle;
+}
+
+.exif-tag-value {
+    word-break: break-all;
+    max-width: 300px;
+    color: var(--color-text);
+}
+
+.exif-tag-id {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 0.72rem;
+    color: #aaa;
+}
+
+/* Tag table scrollable container */
+.exif-table-wrapper {
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius);
+}
+
+/* Actions panel */
+.exif-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.exif-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    font-size: 0.82rem;
+    padding: 0.5rem 0.8rem;
+}
+
+/* Summary */
+.tag-summary {
+    font-size: 0.82rem;
+    color: var(--color-text-dim);
+    margin-bottom: 0.75rem;
+}
+
+/* Result info */
+.result-info {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+    background: #e8f5e9;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    border: 1px solid #c8e6c9;
+}
+
+.result-removed {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+/* Status message */
+.status-msg {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+    background: #fff3e0;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    border: 1px solid #ffe0b2;
+    color: #e65100;
+}
+
+/* Layout override: wider left column for this tool */
+.exif-layout {
+    grid-template-columns: 1fr 320px;
+}
+
+@media (max-width: 768px) {
+    .exif-layout {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXIF Viewer &amp; Editor - Ixonae Utils</title>
+    <link rel="stylesheet" href="../../shared/styles/base.css">
+    <link rel="stylesheet" href="../../shared/styles/components.css">
+    <link rel="stylesheet" href="../../shared/styles/layout.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-header"></div>
+
+    <div class="tool-header">
+        <h2>EXIF Viewer &amp; Editor</h2>
+        <p>View, inspect, and strip EXIF metadata from your photos &mdash; everything stays in your browser</p>
+    </div>
+
+    <div class="app exif-layout">
+        <!-- Left: tag table (wider) -->
+        <div>
+            <div class="panel" style="margin-bottom: 1rem;">
+                <h2>EXIF Tags</h2>
+                <div class="tag-summary" id="tag-summary">No tags loaded</div>
+                <div class="status-msg" id="status-msg" style="display: none;"></div>
+
+                <div id="actions-panel" style="display: none;">
+                    <div class="exif-actions">
+                        <button class="btn btn-primary" id="btn-strip-selected">Strip Checked</button>
+                        <button class="btn btn-danger" id="btn-strip-gps">Strip GPS</button>
+                        <button class="btn btn-danger" id="btn-strip-all">Strip All</button>
+                    </div>
+                    <p class="field-hint">Check the tags you want to remove, then click "Strip Checked". Or use the quick actions.</p>
+                </div>
+
+                <div class="result-info" id="result-info" style="display: none;"></div>
+
+                <div class="exif-table-wrapper" id="tag-table-container">
+                    <div class="placeholder-msg">Upload a JPEG to view its EXIF data</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: upload + preview -->
+        <div>
+            <div class="panel" style="margin-bottom: 1rem;">
+                <h2>Upload</h2>
+                <div id="upload-container"></div>
+            </div>
+
+            <div class="panel preview-area">
+                <h2 style="align-self: stretch;">Preview</h2>
+                <div id="preview-container">
+                    <div class="placeholder-msg">Upload an image to get started</div>
+                </div>
+                <button class="btn btn-download" id="btn-download" style="display: none;">Download Cleaned Image</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-footer"></div>
+
+    <!-- Shared -->
+    <script src="../../shared/utils/dom.js"></script>
+    <script src="../../shared/utils/image.js"></script>
+    <script src="../../shared/components/header.js"></script>
+    <script src="../../shared/components/footer.js"></script>
+    <script src="../../shared/components/upload-zone.js"></script>
+    <!-- EXIF modules -->
+    <script src="tag-dictionary.js"></script>
+    <script src="exif-parser.js"></script>
+    <script src="exif-writer.js"></script>
+    <!-- App -->
+    <script src="exif-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ixonae Utils</title>
+    <link rel="stylesheet" href="shared/styles/base.css">
+    <link rel="stylesheet" href="shared/styles/components.css">
+    <link rel="stylesheet" href="shared/styles/layout.css">
+    <link rel="stylesheet" href="shared/styles/home.css">
+</head>
+<body>
+    <div id="app-header"></div>
+
+    <div class="hero">
+        <h2>Ixonae Utils</h2>
+        <p>Browser-based image tools. No uploads, no servers &mdash; everything runs locally in your browser.</p>
+    </div>
+
+    <div class="tool-grid">
+        <a href="tools/watermark/" class="tool-card">
+            <h3>Watermark Tool</h3>
+            <p>Add visible or stealth watermarks to images. Supports visible text, LSB, DCT, and EXIF embedding.</p>
+        </a>
+
+        <a href="tools/exif/" class="tool-card">
+            <h3>EXIF Viewer &amp; Editor</h3>
+            <p>View all EXIF metadata in your photos. Selectively strip GPS, camera info, or all metadata before sharing.</p>
+        </a>
+    </div>
+
+    <div id="app-footer"></div>
+
+    <script src="shared/components/header.js"></script>
+    <script src="shared/components/footer.js"></script>
+    <script>
+        renderHeader(document.getElementById('app-header'), { activeTool: 'Home' });
+        renderFooter(document.getElementById('app-footer'));
+    </script>
+</body>
+</html>
