@@ -11,19 +11,26 @@ permissions:
   deployments: write
 
 jobs:
-  test-and-release:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  release:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+
       - run: npm ci
-      - run: npm test
-      - run: npx semantic-release
+
+      - name: Release
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -35,4 +42,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy deploy/ --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }}
+          command: pages deploy deploy/ --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=staging
