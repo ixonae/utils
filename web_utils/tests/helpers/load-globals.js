@@ -5,11 +5,11 @@
  * @returns {object} The module's exports
  */
 function loadIntoGlobal(modulePath) {
-    const mod = require(modulePath);
-    for (const [key, value] of Object.entries(mod)) {
-        globalThis[key] = value;
-    }
-    return mod;
+  const mod = require(modulePath);
+  for (const [key, value] of Object.entries(mod)) {
+    globalThis[key] = value;
+  }
+  return mod;
 }
 
 module.exports = { loadIntoGlobal };

@@ -20,41 +20,51 @@
  * @param {number} [options.spacingY=80] - Vertical spacing between tiled watermarks in pixels.
  */
 function applyVisibleWatermark(canvas, img, options) {
-    const { text = 'WATERMARK', font = 'Arial', size = 48, color = '#ff0000', opacity = 0.3, angle = -30, pattern = 'tile', spacingX = 100, spacingY = 80 } = options;
+  const {
+    text = "WATERMARK",
+    font = "Arial",
+    size = 48,
+    color = "#ff0000",
+    opacity = 0.3,
+    angle = -30,
+    pattern = "tile",
+    spacingX = 100,
+    spacingY = 80,
+  } = options;
 
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext('2d');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext("2d");
 
-    ctx.drawImage(img, 0, 0);
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = color;
-    ctx.font = `bold ${size}px "${font}"`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+  ctx.drawImage(img, 0, 0);
+  ctx.globalAlpha = opacity;
+  ctx.fillStyle = color;
+  ctx.font = `bold ${size}px "${font}"`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
 
-    const rad = angle * Math.PI / 180;
+  const rad = (angle * Math.PI) / 180;
 
-    if (pattern === 'center') {
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(rad);
-        ctx.fillText(text, 0, 0);
-        ctx.restore();
-    } else {
-        const stepX = ctx.measureText(text).width + spacingX;
-        const stepY = size + spacingY;
-        const diag = Math.hypot(canvas.width, canvas.height);
+  if (pattern === "center") {
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(rad);
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+  } else {
+    const stepX = ctx.measureText(text).width + spacingX;
+    const stepY = size + spacingY;
+    const diag = Math.hypot(canvas.width, canvas.height);
 
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(rad);
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(rad);
 
-        for (let y = -diag; y < diag * 2; y += stepY) {
-            for (let x = -diag; x < diag * 2; x += stepX) {
-                ctx.fillText(text, x, y);
-            }
-        }
-        ctx.restore();
+    for (let y = -diag; y < diag; y += stepY) {
+      for (let x = -diag; x < diag; x += stepX) {
+        ctx.fillText(text, x, y);
+      }
     }
+    ctx.restore();
+  }
 }
