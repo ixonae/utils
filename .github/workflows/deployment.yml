@@ -34,4 +34,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy deploy/ --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} ${{ inputs.environment == 'staging' && '--branch=staging' || '' }}
+          command: >-
+            pages deploy deploy/
+            --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }}
+            --branch=${{ inputs.environment == 'staging' && 'staging' || 'main' }}
