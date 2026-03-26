@@ -155,7 +155,7 @@
             <!-- Stealth DCT settings -->
             <div class="panel mode-panel" id="dctPanel" style="display:none;">
                 <h2>Stealth Watermark (DCT)</h2>
-                <p class="panel-desc">Embeds data in frequency-domain coefficients. Survives JPEG compression, resizing, and brightness adjustments.</p>
+                <p class="panel-desc">Embeds data in frequency-domain coefficients. Survives high-quality JPEG compression (90+), and moderate brightness adjustments.</p>
 
                 <div class="field">
                     <label for="dctMessage">Hidden Message</label>
@@ -179,7 +179,7 @@
                     <summary>Pros &amp; Cons</summary>
                     <ul>
                         <li class="pro">Invisible &mdash; no perceptible change at reasonable strength</li>
-                        <li class="pro">Survives JPEG compression (the key advantage over LSB)</li>
+                        <li class="pro">Survives high-quality JPEG compression (quality 90+)</li>
                         <li class="pro">Survives moderate brightness/contrast adjustments</li>
                         <li class="con">Lower data capacity than LSB &mdash; best for short identifiers</li>
                         <li class="con">Destroyed by screenshots</li>

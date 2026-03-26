@@ -3,7 +3,6 @@
 A collection of browser-based utility tools. Everything runs locally in your browser — no data is uploaded anywhere.
 
 - **Production:** https://web-tools.ixonae.com
-- **Staging:** https://staging.web-tools-6ga.pages.dev
 
 ## Available tools
 
