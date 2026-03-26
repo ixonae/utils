@@ -22,17 +22,16 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Prepare deploy directory
         run: rsync -av --exclude='tests' web_utils/ deploy/
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
-        env:
-          CLOUDFLARE_PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy deploy/ --project-name=$CLOUDFLARE_PROJECT_NAME ${{ inputs.environment == 'staging' && '--branch=staging' || '' }}
+          command: pages deploy deploy/ --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} ${{ inputs.environment == 'staging' && '--branch=staging' || '' }}
