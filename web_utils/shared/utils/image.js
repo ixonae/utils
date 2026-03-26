@@ -5,11 +5,11 @@
  * @returns {HTMLCanvasElement} A canvas with the image drawn onto it.
  */
 function createCanvasFromImage(img) {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    canvas.getContext('2d').drawImage(img, 0, 0);
-    return canvas;
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  canvas.getContext("2d").drawImage(img, 0, 0);
+  return canvas;
 }
 
 /**
@@ -19,9 +19,13 @@ function createCanvasFromImage(img) {
  * @returns {Promise<ArrayBuffer>} Resolves with the JPEG data as an ArrayBuffer.
  */
 function canvasToJpegArrayBuffer(canvas, quality) {
-    return new Promise(resolve => {
-        canvas.toBlob(blob => {
-            blob.arrayBuffer().then(resolve);
-        }, 'image/jpeg', quality);
-    });
+  return new Promise((resolve) => {
+    canvas.toBlob(
+      (blob) => {
+        blob.arrayBuffer().then(resolve);
+      },
+      "image/jpeg",
+      quality,
+    );
+  });
 }

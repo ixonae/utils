@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: npx eslint --fix
+        language: system
+        types: [javascript]
+        files: ^(web_utils/|vitest\.config\.mjs)
+
+      - id: prettier
+        name: prettier
+        entry: npx prettier --write --ignore-unknown
+        language: system
+        types: [javascript]
+        files: ^(web_utils/|vitest\.config\.mjs)

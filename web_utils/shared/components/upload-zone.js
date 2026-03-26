@@ -8,40 +8,56 @@
  * @returns {{ zone: HTMLElement, setLabel: function(string): void }} Handle to the zone element and a helper to update its label text.
  */
 function createUploadZone(container, options) {
-    const accept = options?.accept ?? 'image/*';
-    const label = options?.label ?? 'Drop an image here or click to browse';
-    const onFile = options?.onFile;
+  const accept = options?.accept ?? "image/*";
+  const label = options?.label ?? "Drop an image here or click to browse";
+  const onFile = options?.onFile;
 
-    container.innerHTML =
-        '<div class="upload-zone" data-upload-zone>' +
-            '<span class="icon">&#128196;</span>' +
-            '<span class="text">' + label + '</span>' +
-            '<input type="file" accept="' + accept + '">' +
-        '</div>';
+  container.innerHTML =
+    '<div class="upload-zone" data-upload-zone>' +
+    '<span class="icon">&#128196;</span>' +
+    '<span class="text">' +
+    label +
+    "</span>" +
+    '<input type="file" accept="' +
+    accept +
+    '">' +
+    "</div>";
 
-    const zone = container.querySelector('[data-upload-zone]');
-    const input = zone.querySelector('input[type="file"]');
-    const textEl = zone.querySelector('.text');
+  const zone = container.querySelector("[data-upload-zone]");
+  const input = zone.querySelector('input[type="file"]');
+  const textEl = zone.querySelector(".text");
 
-    zone.addEventListener('click', function () { input.click(); });
-    input.addEventListener('change', function () {
-        if (input.files[0]) {
-            textEl.textContent = input.files[0].name;
-            onFile(input.files[0]);
-        }
-    });
+  zone.addEventListener("click", function () {
+    input.click();
+  });
+  input.addEventListener("change", function () {
+    if (input.files[0]) {
+      textEl.textContent = input.files[0].name;
+      onFile(input.files[0]);
+    }
+  });
 
-    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', function () { zone.classList.remove('drag-over'); });
-    zone.addEventListener('drop', function (e) {
-        e.preventDefault();
-        zone.classList.remove('drag-over');
-        const file = e.dataTransfer.files[0];
-        if (file) {
-            textEl.textContent = file.name;
-            onFile(file);
-        }
-    });
+  zone.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    zone.classList.add("drag-over");
+  });
+  zone.addEventListener("dragleave", function () {
+    zone.classList.remove("drag-over");
+  });
+  zone.addEventListener("drop", function (e) {
+    e.preventDefault();
+    zone.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      textEl.textContent = file.name;
+      onFile(file);
+    }
+  });
 
-    return { zone: zone, setLabel: function (text) { textEl.textContent = text; } };
+  return {
+    zone: zone,
+    setLabel: function (text) {
+      textEl.textContent = text;
+    },
+  };
 }
