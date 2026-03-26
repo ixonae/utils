@@ -30,20 +30,68 @@ function _dctCoeff(block, u, v) {
 }
 
 /**
- * Performs a full 2D forward DCT on an 8x8 spatial block.
- * Computes all 64 frequency coefficients by calling {@link _dctCoeff} for each (u, v) pair.
+ * Performs a 1D DCT on a row of 8 values using the precomputed cosine table.
+ * Used as a building block for the separable 2D DCT.
+ *
+ * @param {Float64Array} row - 8 input values.
+ * @param {Float64Array} out - 8-element output array for the DCT coefficients.
+ */
+function _dct1d(row, out) {
+    for (let k = 0; k < 8; k++) {
+        let sum = 0;
+        for (let n = 0; n < 8; n++) {
+            sum += row[n] * _DCT_COS_TABLE[k * 8 + n];
+        }
+        out[k] = (k === 0 ? _DCT_SQRT2_INV : 1) * 0.5 * sum;
+    }
+}
+
+/**
+ * Performs a 1D inverse DCT on a row of 8 coefficients.
+ *
+ * @param {Float64Array} row - 8 DCT coefficients.
+ * @param {Float64Array} out - 8-element output array for the reconstructed values.
+ */
+function _idct1d(row, out) {
+    for (let n = 0; n < 8; n++) {
+        let sum = 0;
+        for (let k = 0; k < 8; k++) {
+            const ck = k === 0 ? _DCT_SQRT2_INV : 1;
+            sum += ck * row[k] * _DCT_COS_TABLE[k * 8 + n];
+        }
+        out[n] = 0.5 * sum;
+    }
+}
+
+/**
+ * Performs a full 2D forward DCT on an 8x8 spatial block using the separable property.
+ * First applies 1D DCT to each row, then to each column of the intermediate result.
+ * This reduces complexity from O(n^4) to O(n^3) per block.
  *
  * @param {Float64Array} block - An 8x8 block of pixel values stored as a 64-element array (row-major).
  * @returns {Float64Array} A 64-element array of DCT frequency coefficients (row-major by frequency index).
  */
 function _dct2d(block) {
-    const out = new Float64Array(64);
-    for (let u = 0; u < 8; u++) {
-        for (let v = 0; v < 8; v++) {
-            out[u * 8 + v] = _dctCoeff(block, u, v);
-        }
+    const temp = new Float64Array(64);
+    const row = new Float64Array(8);
+    const out = new Float64Array(8);
+
+    // 1D DCT on each row
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) row[c] = block[r * 8 + c];
+        _dct1d(row, out);
+        for (let c = 0; c < 8; c++) temp[r * 8 + c] = out[c];
     }
-    return out;
+
+    // 1D DCT on each column
+    const result = new Float64Array(64);
+    const col = new Float64Array(8);
+    for (let c = 0; c < 8; c++) {
+        for (let r = 0; r < 8; r++) col[r] = temp[r * 8 + c];
+        _dct1d(col, out);
+        for (let r = 0; r < 8; r++) result[r * 8 + c] = out[r];
+    }
+    return result;
 }
 
 /**
@@ -68,20 +116,33 @@ function _idctPixel(coeffs, x, y) {
 }
 
 /**
- * Performs a full 2D inverse DCT, converting 64 frequency coefficients back into
- * an 8x8 spatial pixel block.
+ * Performs a full 2D inverse DCT using the separable property.
+ * First applies 1D IDCT to each row, then to each column.
  *
  * @param {Float64Array} coeffs - A 64-element array of DCT frequency coefficients (row-major).
  * @returns {Float64Array} A 64-element array representing the reconstructed 8x8 pixel block (row-major).
  */
 function _idct2d(coeffs) {
-    const out = new Float64Array(64);
-    for (let x = 0; x < 8; x++) {
-        for (let y = 0; y < 8; y++) {
-            out[x * 8 + y] = _idctPixel(coeffs, x, y);
-        }
+    const temp = new Float64Array(64);
+    const row = new Float64Array(8);
+    const out = new Float64Array(8);
+
+    // 1D IDCT on each row
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) row[c] = coeffs[r * 8 + c];
+        _idct1d(row, out);
+        for (let c = 0; c < 8; c++) temp[r * 8 + c] = out[c];
     }
-    return out;
+
+    // 1D IDCT on each column
+    const result = new Float64Array(64);
+    const col = new Float64Array(8);
+    for (let c = 0; c < 8; c++) {
+        for (let r = 0; r < 8; r++) col[r] = temp[r * 8 + c];
+        _idct1d(col, out);
+        for (let r = 0; r < 8; r++) result[r * 8 + c] = out[r];
+    }
+    return result;
 }
 
 /** Index of the first mid-frequency DCT coefficient used for bit embedding (position [3,2] in the 8x8 grid). */
@@ -89,7 +150,11 @@ const _DCT_POS_A = 3 * 8 + 2;
 /** Index of the second mid-frequency DCT coefficient used for bit embedding (position [2,3] in the 8x8 grid). */
 const _DCT_POS_B = 2 * 8 + 3;
 /** Magic header string prepended to encoded messages to identify valid DCT watermarks. */
-const DCT_MAGIC = 'DCT\x01';
+const DCT_MAGIC = 'DCT\x02';
+/** Number of times each bit is repeated for error correction via majority vote. */
+const _DCT_REPETITIONS = 3;
+/** Maximum message length in bytes to prevent excessive allocation from corrupted headers. */
+const _DCT_MAX_LENGTH = 65536;
 
 /**
  * Converts a message string into a bit array with a 32-bit length prefix.
@@ -111,41 +176,63 @@ function _dctMessageToBits(message) {
 }
 
 /**
- * Extracts the blue channel values from an 8x8 pixel block at the given grid position.
- * The blue channel (offset +2 in RGBA) is used as the carrier for steganographic data.
+ * Computes the luminance (Y) value from RGB using the BT.601 standard coefficients.
+ *
+ * @param {number} r - Red channel value (0-255).
+ * @param {number} g - Green channel value (0-255).
+ * @param {number} b - Blue channel value (0-255).
+ * @returns {number} The luminance value.
+ */
+function _rgbToY(r, g, b) {
+    return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+/**
+ * Extracts the luminance (Y) values from an 8x8 pixel block at the given grid position.
+ * Luminance is more robust than a single color channel across color grading, JPEG compression,
+ * and color space conversions.
  *
  * @param {Uint8ClampedArray} data - The flat RGBA image pixel data array.
  * @param {number} bx - Block x-index in the grid of 8x8 blocks (0-based).
  * @param {number} by - Block y-index in the grid of 8x8 blocks (0-based).
  * @param {number} w - The width of the image in pixels.
- * @returns {Float64Array} A 64-element array containing the blue channel values for the block (row-major).
+ * @returns {Float64Array} A 64-element array containing the luminance values for the block (row-major).
  */
 function _readBlock(data, bx, by, w) {
     const block = new Float64Array(64);
     for (let y = 0; y < 8; y++) {
         for (let x = 0; x < 8; x++) {
             const px = (by * 8 + y) * w + (bx * 8 + x);
-            block[y * 8 + x] = data[px * 4 + 2];
+            const i = px * 4;
+            block[y * 8 + x] = _rgbToY(data[i], data[i + 1], data[i + 2]);
         }
     }
     return block;
 }
 
 /**
- * Writes reconstructed blue channel values from a Float64Array back into the image pixel data.
- * Values are rounded and clamped to the valid [0, 255] range before writing.
+ * Writes modified luminance values back into the image pixel data.
+ * Adjusts all three RGB channels proportionally to match the new luminance while
+ * preserving the original chrominance as closely as possible.
  *
  * @param {Uint8ClampedArray} data - The flat RGBA image pixel data array to modify in place.
  * @param {number} bx - Block x-index in the grid of 8x8 blocks (0-based).
  * @param {number} by - Block y-index in the grid of 8x8 blocks (0-based).
  * @param {number} w - The width of the image in pixels.
- * @param {Float64Array} reconstructed - A 64-element array of reconstructed blue channel values (row-major).
+ * @param {Float64Array} reconstructed - A 64-element array of reconstructed luminance values (row-major).
  */
 function _writeBlock(data, bx, by, w, reconstructed) {
     for (let y = 0; y < 8; y++) {
         for (let x = 0; x < 8; x++) {
             const px = (by * 8 + y) * w + (bx * 8 + x);
-            data[px * 4 + 2] = Math.max(0, Math.min(255, Math.round(reconstructed[y * 8 + x])));
+            const i = px * 4;
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            const oldY = _rgbToY(r, g, b);
+            const newY = reconstructed[y * 8 + x];
+            const delta = newY - oldY;
+            data[i]     = Math.max(0, Math.min(255, Math.round(r + delta)));
+            data[i + 1] = Math.max(0, Math.min(255, Math.round(g + delta)));
+            data[i + 2] = Math.max(0, Math.min(255, Math.round(b + delta)));
         }
     }
 }
@@ -181,21 +268,29 @@ function _embedBit(coeffs, bit, strength) {
  * then extracts that many bytes (8 bits each, MSB first) from the remaining bits.
  * Returns null if the bit array is too short or the length header is invalid.
  *
- * @param {number[]} allBits - Array of 0s and 1s to decode.
+ * @param {number[]} allBits - Array of 0s and 1s to decode (with repetition coding applied).
  * @returns {Uint8Array|null} The decoded byte array, or null if the data is invalid.
  */
 function _bitsToBytes(allBits) {
-    if (allBits.length < 32) return null;
-    let length = 0;
-    for (let i = 0; i < 32; i++) length = (length << 1) | allBits[i];
+    // Decode repetition coding via majority vote
+    const decoded = [];
+    for (let i = 0; i + _DCT_REPETITIONS - 1 < allBits.length; i += _DCT_REPETITIONS) {
+        let ones = 0;
+        for (let r = 0; r < _DCT_REPETITIONS; r++) ones += allBits[i + r];
+        decoded.push(ones > _DCT_REPETITIONS / 2 ? 1 : 0);
+    }
 
-    if (length <= 0 || length > (allBits.length - 32) / 8) return null;
+    if (decoded.length < 32) return null;
+    let length = 0;
+    for (let i = 0; i < 32; i++) length = (length << 1) | decoded[i];
+
+    if (length <= 0 || length > _DCT_MAX_LENGTH || length > (decoded.length - 32) / 8) return null;
 
     const bytes = [];
     for (let i = 0; i < length; i++) {
         let byte = 0;
         for (let j = 0; j < 8; j++) {
-            byte = (byte << 1) | allBits[32 + i * 8 + j];
+            byte = (byte << 1) | decoded[32 + i * 8 + j];
         }
         bytes.push(byte);
     }
@@ -204,8 +299,9 @@ function _bitsToBytes(allBits) {
 
 /**
  * Encodes a hidden message into a canvas image using DCT-based steganography.
- * The image is divided into 8x8 blocks, and one bit is embedded per block by
- * manipulating two mid-frequency DCT coefficients in the blue channel. A magic
+ * The image is divided into 8x8 blocks. Each logical bit is embedded with repetition
+ * coding across multiple blocks by manipulating two mid-frequency DCT coefficients
+ * in the luminance (Y) channel. A magic
  * header ({@link DCT_MAGIC}) is prepended to the message for later validation.
  * Throws an error if the message requires more blocks than are available.
  *
@@ -220,7 +316,12 @@ function dctEncode(canvas, message, strength) {
     const data = imageData.data;
     const w = canvas.width;
 
-    const bits = _dctMessageToBits(DCT_MAGIC + message);
+    const rawBits = _dctMessageToBits(DCT_MAGIC + message);
+    // Apply repetition coding: each bit is repeated _DCT_REPETITIONS times
+    const bits = [];
+    for (const b of rawBits) {
+        for (let r = 0; r < _DCT_REPETITIONS; r++) bits.push(b);
+    }
     const blocksX = Math.floor(w / 8);
     const blocksY = Math.floor(canvas.height / 8);
 
@@ -289,9 +390,11 @@ function dctCapacity(width, height) {
     const blocksX = Math.floor(width / 8);
     const blocksY = Math.floor(height / 8);
     const totalBlocks = blocksX * blocksY;
-    return { totalBlocks, maxChars: Math.floor((totalBlocks - 32) / 8) };
+    // Each logical bit uses _DCT_REPETITIONS blocks; 32-bit length header + magic header + 8 bits per char
+    const logicalBits = Math.floor(totalBlocks / _DCT_REPETITIONS);
+    return { totalBlocks, maxChars: Math.floor((logicalBits - 32) / 8) - DCT_MAGIC.length };
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { _dctCoeff, _dct2d, _idctPixel, _idct2d, _dctMessageToBits, _readBlock, _writeBlock, _embedBit, _bitsToBytes, dctEncode, dctDecode, dctCapacity, _DCT_COS_TABLE, _DCT_SQRT2_INV, _DCT_POS_A, _DCT_POS_B, DCT_MAGIC };
+    module.exports = { _dctCoeff, _dct1d, _idct1d, _dct2d, _idctPixel, _idct2d, _dctMessageToBits, _rgbToY, _readBlock, _writeBlock, _embedBit, _bitsToBytes, dctEncode, dctDecode, dctCapacity, _DCT_COS_TABLE, _DCT_SQRT2_INV, _DCT_POS_A, _DCT_POS_B, DCT_MAGIC, _DCT_REPETITIONS, _DCT_MAX_LENGTH };
 }
