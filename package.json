@@ -27,11 +27,11 @@
   },
   "homepage": "https://github.com/ixonae/utils#readme",
   "devDependencies": {
-    "@vitest/coverage-v8": "4.1.1",
-    "eslint": "10.1.0",
+    "@vitest/coverage-v8": "5.0.5",
+    "eslint": "10.14.0",
     "eslint-config-prettier": "10.1.8",
-    "globals": "17.4.0",
-    "prettier": "3.8.1",
-    "vitest": "4.1.1"
+    "globals": "17.14.0",
+    "prettier": "3.9.10",
+    "vitest": "5.0.5"
   }
 }
