@@ -8,6 +8,7 @@ A collection of browser-based utility tools. Everything runs locally in your bro
 
 - **Watermark Tool** — Add visible or stealth watermarks to images. Supports visible text overlay, LSB (Least Significant Bit) steganography, DCT (Discrete Cosine Transform) steganography, and EXIF metadata embedding.
 - **EXIF Viewer & Editor** — View all EXIF metadata in JPEG photos. Selectively strip GPS data, camera info, or all metadata before sharing.
+- **Apple Config Profile Editor** — Create and edit `.mobileconfig` profiles for encrypted DNS (DoH/DoT) with per-network Wi-Fi exclusions. Can import an existing profile and keep its identifiers.
 
 ## Getting started
 
@@ -37,6 +38,7 @@ web_utils/
   tools/
     watermark/                # Watermark tool (visible, LSB, DCT, EXIF)
     exif/                     # EXIF viewer and editor
+    apple-profile/            # Apple configuration profile (DNS) editor
   tests/                      # Unit tests (Vitest)
     helpers/                  # Test utilities and fixtures
     exif/                     # EXIF parser/writer tests
