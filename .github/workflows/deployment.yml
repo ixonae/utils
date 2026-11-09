@@ -13,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  deployments: write
 
 jobs:
   test:
@@ -22,6 +21,9 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
     environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
