@@ -5,5 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
+  quality:
+    uses: ./.github/workflows/quality.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

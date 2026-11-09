@@ -8,11 +8,13 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
+  quality:
+    uses: ./.github/workflows/quality.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   release:
-    needs: test
+    needs: quality
     runs-on: ubuntu-latest
     permissions:
       contents: write
