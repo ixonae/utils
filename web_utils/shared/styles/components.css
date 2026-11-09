@@ -127,6 +127,15 @@
 
 .btn:active { transform: scale(0.97); }
 
+@media (prefers-reduced-motion: reduce) {
+    html:root *, html:root *::before, html:root *::after {
+        scroll-behavior: auto;
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
+    }
+}
+
 .btn-primary {
     background: var(--color-accent);
     color: white;

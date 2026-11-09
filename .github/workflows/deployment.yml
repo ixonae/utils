@@ -15,11 +15,11 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
+  quality:
+    uses: ./.github/workflows/quality.yml
 
   deploy:
-    needs: test
+    needs: quality
     runs-on: ubuntu-latest
     permissions:
       contents: read
