@@ -5,6 +5,7 @@ export default defineConfig({
     include: ["web_utils/tests/**/*.test.js"],
     globals: true,
     coverage: {
+      reporter: ["text", "html", "clover", "json", "lcov"],
       exclude: ["web_utils/tests/**"],
     },
   },
