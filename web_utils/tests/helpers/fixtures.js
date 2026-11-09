@@ -15,17 +15,27 @@ function createMinimalJpeg({ exifTiffBytes = null } = {}) {
   if (exifTiffBytes) {
     const exifHeader = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00]; // "Exif\0\0"
     const segLength = 2 + exifHeader.length + exifTiffBytes.length;
-    parts.push(0xff, 0xe1);
-    parts.push((segLength >> 8) & 0xff, segLength & 0xff);
-    parts.push(...exifHeader);
-    parts.push(...exifTiffBytes);
+    parts.push(
+      0xff,
+      0xe1,
+      (segLength >> 8) & 0xff,
+      segLength & 0xff,
+      ...exifHeader,
+      ...exifTiffBytes,
+    );
   }
 
   // SOS marker + minimal scan data + EOI
-  parts.push(0xff, 0xda);
-  parts.push(0x00, 0x02); // segment length = 2 (just the length field)
-  parts.push(0x00, 0x00); // dummy scan data
-  parts.push(0xff, 0xd9); // EOI
+  parts.push(
+    0xff,
+    0xda,
+    0x00,
+    0x02, // segment length = 2 (just the length field)
+    0x00,
+    0x00, // dummy scan data
+    0xff,
+    0xd9, // EOI
+  );
 
   return new Uint8Array(parts);
 }
@@ -77,11 +87,11 @@ function createMinimalTiff(entries = []) {
     pos += 2;
     view.setUint32(pos, e.count);
     pos += 4;
-    if (e.dataOffset !== null) {
+    if (e.dataOffset === null) {
+      u8.set(e.valueBytes.slice(0, 4), pos);
+    } else {
       view.setUint32(pos, e.dataOffset);
       u8.set(e.valueBytes, e.dataOffset);
-    } else {
-      u8.set(e.valueBytes.slice(0, 4), pos);
     }
     pos += 4;
   }
