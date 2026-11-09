@@ -1,5 +1,5 @@
-const fs = require("fs");
-const vm = require("vm");
+const fs = require("node:fs");
+const vm = require("node:vm");
 
 const src = fs.readFileSync(
   require.resolve("../../tools/watermark/visible.js"),
