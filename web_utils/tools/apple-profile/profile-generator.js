@@ -65,7 +65,7 @@ function buildOnDemandRules(excludedSSIDs) {
 }
 
 function cloneJson(value) {
-  return JSON.parse(JSON.stringify(value));
+  return structuredClone(value);
 }
 
 // Builds the Payload of a com.apple.configuration.network.dns-settings declaration

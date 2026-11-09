@@ -80,11 +80,11 @@
 
   function populatePresets() {
     const keys = Object.keys(DNS_PRESETS);
-    for (let i = 0; i < keys.length; i++) {
-      if (keys[i] === "custom") continue;
+    for (const key of keys) {
+      if (key === "custom") continue;
       const opt = document.createElement("option");
-      opt.value = keys[i];
-      opt.textContent = DNS_PRESETS[keys[i]].label;
+      opt.value = key;
+      opt.textContent = DNS_PRESETS[key].label;
       els.presetSelect.appendChild(opt);
     }
   }
@@ -215,10 +215,7 @@
   }
 
   function findProvider(id) {
-    for (let i = 0; i < state.providers.length; i++) {
-      if (state.providers[i].id === id) return state.providers[i];
-    }
-    return null;
+    return state.providers.find((p) => p.id === id) || null;
   }
 
   function onProviderEdit(e) {
@@ -443,9 +440,7 @@
     if (provider.rawOnDemandRules) return [];
     return state.excludedSSIDs
       .filter(function (s) {
-        return (
-          s.providerIds === null || s.providerIds.indexOf(provider.id) !== -1
-        );
+        return s.providerIds === null || s.providerIds.includes(provider.id);
       })
       .map(function (s) {
         return s.name;
@@ -594,8 +589,7 @@
 
   function validate() {
     if (state.providers.length === 0) return "Add at least one DNS provider.";
-    for (let i = 0; i < state.providers.length; i++) {
-      const p = state.providers[i];
+    for (const p of state.providers) {
       if (!p.label.trim()) return "Every provider needs a name.";
       const error = validateEndpoint(
         p.protocol,
@@ -665,7 +659,7 @@
           byName[name] = [];
           order.push(name);
         }
-        if (byName[name].indexOf(p.id) === -1) byName[name].push(p.id);
+        if (!byName[name].includes(p.id)) byName[name].push(p.id);
       });
     });
     state.excludedSSIDs = order.map(function (name) {
@@ -823,7 +817,7 @@
     a.download = safeName + ".mobileconfig";
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    a.remove();
     URL.revokeObjectURL(url);
   }
 

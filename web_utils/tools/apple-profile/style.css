@@ -150,7 +150,7 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     background: #e0e0e0;
-    color: #666;
+    color: #444;
     padding: 0.1rem 0.4rem;
     border-radius: 3px;
 }
@@ -393,7 +393,7 @@
 .ssid-scope-select { font-size: 0.8rem; padding: 0.2rem 0.3rem; align-self: flex-start; }
 .ssid-scope-providers { display: flex; flex-direction: column; gap: 0.15rem; padding-left: 0.3rem; font-size: 0.8rem; }
 .provider-note { font-size: 0.75rem; margin-top: 0.3rem; opacity: 0.8; }
-.import-status { font-size: 0.82rem; margin: 0.6rem 0 0; }
+.import-status { display: block; font-size: 0.82rem; margin: 0.6rem 0 0; text-align: center; }
 .import-status:empty { display: none; }
 .import-status.import-error { color: var(--color-danger); }
 
@@ -419,6 +419,7 @@
 
 /* Import file picker */
 .import-drop {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -445,5 +446,3 @@
     opacity: 0;
     overflow: hidden;
 }
-.import-drop { position: relative; }
-.import-status { text-align: center; }

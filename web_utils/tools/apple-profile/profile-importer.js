@@ -147,8 +147,7 @@ function providerFromPayload(payload, identifier, serverToken) {
 function parseProfile(buffer) {
   const plist = parsePlistBytes(buffer);
   if (
-    !plist ||
-    plist.PayloadType !== "Configuration" ||
+    plist?.PayloadType !== "Configuration" ||
     !Array.isArray(plist.PayloadContent)
   ) {
     throw new Error("Not a configuration profile (no PayloadContent).");
