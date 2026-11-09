@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Configuration Profile Editor - Ixonae Utils</title>
+    <link rel="stylesheet" href="../../shared/styles/base.css">
+    <link rel="stylesheet" href="../../shared/styles/components.css">
+    <link rel="stylesheet" href="../../shared/styles/layout.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-header"></div>
+
+    <div class="tool-header">
+        <h2>Apple Configuration Profile Editor</h2>
+        <p>Create and edit .mobileconfig profiles for encrypted DNS (DoH/DoT) with Wi-Fi exclusions &mdash; everything stays in your browser</p>
+    </div>
+
+    <div class="app profile-layout">
+        <!-- Left: settings -->
+        <div>
+            <div class="panel" style="margin-bottom: 1rem;">
+                <h2>Import Existing Profile</h2>
+                <p class="panel-desc">
+                    Load a <code>.mobileconfig</code> to keep editing it. Profile, payload, declaration and activation
+                    identifiers are preserved (a declaration only gets a new <code>ServerToken</code> when its content changes).
+                    Everything is read locally in your browser.
+                </p>
+                <label class="import-drop" for="import-file">
+                    <span class="import-drop-title">Choose a <code>.mobileconfig</code> file</span>
+                    <span class="import-drop-hint">Click to browse</span>
+                    <input type="file" id="import-file" accept=".mobileconfig,.plist,.xml">
+                </label>
+                <output class="import-status" id="import-status"></output>
+            </div>
+
+            <div class="panel" style="margin-bottom: 1rem;">
+                <h2>DNS Providers</h2>
+                <p class="panel-desc">
+                    Add one or more DNS providers. Each one becomes its own
+                    <a href="https://developer.apple.com/documentation/devicemanagement/networkdnssettings" target="_blank" rel="noopener">NetworkDNSSettings</a>
+                    declaration (DoH or DoT), and Apple applies multiple configurations separately.
+                </p>
+
+                <div class="provider-add-row">
+                    <select id="provider-preset" aria-label="DNS provider preset">
+                        <option value="" disabled selected>Choose a provider&hellip;</option>
+                    </select>
+                    <button class="btn-add-provider" id="btn-add-preset">Add</button>
+                </div>
+
+                <div class="provider-or">or</div>
+
+                <details class="custom-provider-form" id="custom-form">
+                    <summary>Add a custom provider</summary>
+                    <div class="custom-fields">
+                        <div class="field">
+                            <label for="custom-name">Name</label>
+                            <input type="text" id="custom-name" placeholder="My DNS Provider">
+                        </div>
+                        <div class="field">
+                            <label for="custom-protocol">Protocol</label>
+                            <select id="custom-protocol">
+                                <option value="HTTPS">DNS over HTTPS (DoH)</option>
+                                <option value="TLS">DNS over TLS (DoT)</option>
+                            </select>
+                        </div>
+                        <div class="field" id="custom-url-field">
+                            <label for="custom-url">DoH Server URL</label>
+                            <input type="text" id="custom-url" placeholder="https://dns.example.com/dns-query">
+                        </div>
+                        <div class="field" id="custom-servername-field" hidden>
+                            <label for="custom-servername">DoT Server Hostname</label>
+                            <input type="text" id="custom-servername" placeholder="dns.example.com">
+                        </div>
+                        <div class="field">
+                            <label for="custom-addresses">Server IP Addresses</label>
+                            <textarea id="custom-addresses" rows="2" placeholder="One per line, e.g.&#10;1.1.1.1&#10;2606:4700::1111"></textarea>
+                            <span class="field-hint">Optional <a href="https://developer.apple.com/documentation/devicemanagement/networkdnssettingsdnssettingsobject" target="_blank" rel="noopener"><code>ServerAddresses</code></a>, used to reach the server without a DNS lookup.</span>
+                        </div>
+                        <div class="field">
+                            <label><input type="checkbox" id="custom-failover"> Allow failover to the system DNS resolver</label>
+                            <span class="field-hint"><code>AllowFailover</code>: if the server is unreachable, fall back to the default resolver.</span>
+                        </div>
+                        <button class="btn btn-secondary" id="btn-add-custom">Add Custom Provider</button>
+                    </div>
+                </details>
+
+                <ul class="provider-list" id="provider-list">
+                    <li class="provider-empty" id="provider-empty">No providers added yet. Add at least one DNS provider above.</li>
+                </ul>
+            </div>
+
+            <div class="panel" style="margin-bottom: 1rem;">
+                <h2>Wi-Fi Exclusions</h2>
+                <p class="panel-desc">DNS over HTTPS will be disabled on these Wi-Fi networks, for all providers or only the ones you pick. Useful for networks with captive portals or corporate DNS.</p>
+
+                <div class="ssid-add-row">
+                    <input type="text" id="ssid-input" aria-label="Wi-Fi network name (SSID)" placeholder="Wi-Fi network name (SSID)">
+                    <button id="ssid-add-btn">Add</button>
+                </div>
+                <ul class="ssid-list" id="ssid-list"></ul>
+            </div>
+
+            <div class="panel" style="margin-bottom: 1rem;">
+                <h2>Profile Details</h2>
+
+                <div class="field">
+                    <label for="profile-name">Display Name</label>
+                    <input type="text" id="profile-name" value="DNS over HTTPS">
+                </div>
+
+                <div class="field">
+                    <label for="profile-identifier">Identifier</label>
+                    <input type="text" id="profile-identifier" value="com.ixonae.doh-profile">
+                    <span class="field-hint">Reverse-domain identifier, used by macOS/iOS to identify the profile</span>
+                </div>
+
+                <div class="field">
+                    <label for="profile-description">Description</label>
+                    <textarea id="profile-description" rows="2">Routes DNS queries over HTTPS for privacy and security</textarea>
+                </div>
+
+                <hr class="section-divider">
+
+                <button class="btn btn-primary" id="btn-generate">Generate Profile</button>
+            </div>
+        </div>
+
+        <!-- Right: preview -->
+        <div>
+            <div class="panel">
+                <h2>Profile Preview</h2>
+                <div class="info-callout">
+                    This profile installs the
+                    <a href="https://developer.apple.com/documentation/devicemanagement/networkdnssettings" target="_blank" rel="noopener"><code>com.apple.configuration.network.dns-settings</code></a>
+                    declarative configuration (iOS, iPadOS, macOS and visionOS 27+), activated with
+                    <a href="https://developer.apple.com/documentation/devicemanagement/activationsimple" target="_blank" rel="noopener"><code>com.apple.activation.simple</code></a>
+                    and wrapped in a
+                    <a href="https://developer.apple.com/documentation/devicemanagement/declarations" target="_blank" rel="noopener"><code>com.apple.declarations</code></a>
+                    profile so it can be installed locally without MDM.
+                    It replaces the
+                    <a href="https://developer.apple.com/documentation/devicemanagement/dnssettings" target="_blank" rel="noopener">deprecated <code>com.apple.dnsSettings.managed</code> payload</a>.
+                    Install it via Settings &gt; General &gt; VPN &amp; Device Management on iOS,
+                    or double-click on macOS. The profile is unsigned &mdash; your device will ask you to confirm the installation.
+                    Wi-Fi exclusions use <a href="https://developer.apple.com/documentation/devicemanagement/networkdnssettingsondemandruleselementobject" target="_blank" rel="noopener">OnDemandRules</a>.
+                </div>
+
+                <div id="xml-preview">
+                    <div class="preview-placeholder">Configure your DNS settings and click Generate to preview the profile</div>
+                </div>
+
+                <div class="download-actions">
+                    <button class="btn btn-download" id="btn-download" disabled>Download .mobileconfig</button>
+                    <button class="btn btn-outline" id="btn-copy" disabled>Copy XML</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-footer"></div>
+
+    <!-- Shared -->
+    <script src="../../shared/utils/dom.js"></script>
+    <script src="../../shared/components/header.js"></script>
+    <script src="../../shared/components/footer.js"></script>
+    <!-- Profile modules -->
+    <script src="profile-generator.js"></script>
+    <script src="profile-importer.js"></script>
+    <!-- App -->
+    <script src="profile-app.js"></script>
+    <script>
+        renderHeader(document.getElementById('app-header'), { activeTool: 'Config Profile', basePath: '../../' });
+        renderFooter(document.getElementById('app-footer'));
+    </script>
+</body>
+</html>

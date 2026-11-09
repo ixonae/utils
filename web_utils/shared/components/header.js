@@ -14,6 +14,7 @@ function renderHeader(container, options) {
     { label: "Home", href: base + "index.html" },
     { label: "Watermark", href: base + "tools/watermark/index.html" },
     { label: "EXIF", href: base + "tools/exif/index.html" },
+    { label: "Config Profile", href: base + "tools/apple-profile/index.html" },
   ];
 
   const nav = links
