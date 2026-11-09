@@ -19,10 +19,14 @@ function createCanvasFromImage(img) {
  * @returns {Promise<ArrayBuffer>} Resolves with the JPEG data as an ArrayBuffer.
  */
 function canvasToJpegArrayBuffer(canvas, quality) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
-        blob.arrayBuffer().then(resolve);
+        if (!blob) {
+          reject(new Error("The canvas could not be encoded as JPEG."));
+          return;
+        }
+        blob.arrayBuffer().then(resolve, reject);
       },
       "image/jpeg",
       quality,

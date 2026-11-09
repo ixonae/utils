@@ -41,7 +41,11 @@ document.querySelectorAll(".mode-tab").forEach((tab) => {
 
 // --- File upload ---
 dropZone.addEventListener("click", () => fileInput.click());
-fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+fileInput.addEventListener("change", (e) => {
+  void handleFile(e.target.files[0]).catch((error) =>
+    console.error("Unable to process the selected image:", error),
+  );
+});
 
 dropZone.addEventListener("dragover", (e) => {
   e.preventDefault();
@@ -54,7 +58,11 @@ dropZone.addEventListener("drop", (e) => {
   e.preventDefault();
   dropZone.classList.remove("drag-over");
   const file = e.dataTransfer.files[0];
-  if (file?.type.startsWith("image/")) handleFile(file);
+  if (file?.type.startsWith("image/")) {
+    void handleFile(file).catch((error) =>
+      console.error("Unable to process the dropped image:", error),
+    );
+  }
 });
 
 /**

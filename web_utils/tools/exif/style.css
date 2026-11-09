@@ -52,8 +52,8 @@
     letter-spacing: 0.04em;
 }
 
-.exif-group-row:hover {
-    background: transparent !important;
+.exif-table tbody .exif-group-row:hover {
+    background: transparent;
 }
 
 .exif-tag-name {

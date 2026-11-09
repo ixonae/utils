@@ -56,3 +56,8 @@
     line-height: 1.5;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .tool-card { transition: none; }
+    .tool-card:hover { transform: none; }
+}
+
