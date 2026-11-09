@@ -23,9 +23,9 @@ function plistNodeToValue(node) {
     case "data":
       return node.textContent.replace(/\s+/g, "");
     case "integer":
-      return parseInt(node.textContent, 10);
+      return Number.parseInt(node.textContent, 10);
     case "real":
-      return parseFloat(node.textContent);
+      return Number.parseFloat(node.textContent);
     case "true":
       return true;
     case "false":
@@ -38,7 +38,7 @@ function plistNodeToValue(node) {
 // Accepts the raw bytes; signed profiles (CMS) embed the plist as readable XML
 function parsePlistBytes(buffer) {
   const bytes = new Uint8Array(buffer);
-  const head = String.fromCharCode.apply(null, bytes.subarray(0, 8));
+  const head = String.fromCodePoint.apply(null, bytes.subarray(0, 8));
   if (head.indexOf("bplist") === 0) {
     throw new Error(
       "Binary property lists are not supported. Export the profile as XML.",
@@ -74,7 +74,7 @@ function parsePlistBytes(buffer) {
 function decodeDeclaration(base64) {
   const binary = atob(base64);
   const bytes = Uint8Array.from(binary, function (c) {
-    return c.charCodeAt(0);
+    return c.codePointAt(0);
   });
   return JSON.parse(new TextDecoder("utf-8").decode(bytes));
 }

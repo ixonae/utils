@@ -44,7 +44,7 @@
                 </p>
 
                 <div class="provider-add-row">
-                    <select id="provider-preset">
+                    <select id="provider-preset" aria-label="DNS provider preset">
                         <option value="" disabled selected>Choose a provider&hellip;</option>
                     </select>
                     <button class="btn-add-provider" id="btn-add-preset">Add</button>
@@ -97,7 +97,7 @@
                 <p class="panel-desc">DNS over HTTPS will be disabled on these Wi-Fi networks, for all providers or only the ones you pick. Useful for networks with captive portals or corporate DNS.</p>
 
                 <div class="ssid-add-row">
-                    <input type="text" id="ssid-input" placeholder="Wi-Fi network name (SSID)">
+                    <input type="text" id="ssid-input" aria-label="Wi-Fi network name (SSID)" placeholder="Wi-Fi network name (SSID)">
                     <button id="ssid-add-btn">Add</button>
                 </div>
                 <ul class="ssid-list" id="ssid-list"></ul>

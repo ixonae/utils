@@ -1,6 +1,6 @@
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
+    const r = Math.trunc(Math.random() * 16);
     const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16).toUpperCase();
   });
@@ -8,11 +8,11 @@ function generateUUID() {
 
 function escapeXml(str) {
   return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
 }
 
 const DNS_PRESETS = {
@@ -20,31 +20,31 @@ const DNS_PRESETS = {
     label: "Cloudflare (1.1.1.1)",
     url: "https://cloudflare-dns.com/dns-query",
     addresses: [
-      "1.1.1.1",
-      "1.0.0.1",
-      "2606:4700:4700::1111",
-      "2606:4700:4700::1001",
+      "1.1.1.1", // NOSONAR
+      "1.0.0.1", // NOSONAR
+      "2606:4700:4700::1111", // NOSONAR
+      "2606:4700:4700::1001", // NOSONAR
     ],
   },
   "cloudflare-malware": {
     label: "Cloudflare Malware Blocking",
     url: "https://security.cloudflare-dns.com/dns-query",
     addresses: [
-      "1.1.1.2",
-      "1.0.0.2",
-      "2606:4700:4700::1112",
-      "2606:4700:4700::1002",
+      "1.1.1.2", // NOSONAR
+      "1.0.0.2", // NOSONAR
+      "2606:4700:4700::1112", // NOSONAR
+      "2606:4700:4700::1002", // NOSONAR
     ],
   },
   quad9: {
     label: "Quad9 (Security)",
     url: "https://dns.quad9.net/dns-query",
-    addresses: ["9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"],
+    addresses: ["9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"], // NOSONAR
   },
   "quad9-unfiltered": {
     label: "Quad9 (No Threat Blocking)",
     url: "https://dns10.quad9.net/dns-query",
-    addresses: ["9.9.9.10", "149.112.112.10", "2620:fe::10", "2620:fe::fe:10"],
+    addresses: ["9.9.9.10", "149.112.112.10", "2620:fe::10", "2620:fe::fe:10"], // NOSONAR
   },
   custom: {
     label: "Custom",
@@ -201,7 +201,7 @@ function generateDeclarations(config) {
 function base64Utf8(str) {
   let binary = "";
   new TextEncoder().encode(str).forEach(function (b) {
-    binary += String.fromCharCode(b);
+    binary += String.fromCodePoint(b);
   });
   return btoa(binary);
 }

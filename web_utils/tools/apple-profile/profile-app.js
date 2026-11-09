@@ -222,9 +222,9 @@
   }
 
   function onProviderEdit(e) {
-    const field = e.target.getAttribute("data-edit");
+    const field = e.target.dataset.edit;
     if (!field) return;
-    const p = findProvider(parseInt(e.target.getAttribute("data-id"), 10));
+    const p = findProvider(Number.parseInt(e.target.dataset.id, 10));
     if (!p) return;
 
     switch (field) {
@@ -308,105 +308,108 @@
     renderProviders();
   }
 
+  function providerTypeLabel(p) {
+    if (p.type === "custom") return '<span class="provider-type">Custom</span>';
+    if (p.type === "imported")
+      return '<span class="provider-type">Imported</span>';
+    return "";
+  }
+
+  function providerAddressesHtml(p) {
+    if (p.addresses.length === 0) return "";
+    return (
+      '<div class="provider-addresses">' +
+      p.addresses
+        .map(function (a) {
+          return "<span>" + escapeHtml(a) + "</span>";
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  function providerItemHtml(p, j) {
+    const tags =
+      (p.protocol === "TLS" ? '<span class="provider-type">DoT</span>' : "") +
+      (p.allowFailover ? '<span class="provider-type">Failover</span>' : "");
+    const rulesNote = p.rawOnDemandRules
+      ? '<div class="provider-note">Custom on-demand rules kept as imported &mdash; Wi-Fi exclusions don\'t apply to this provider.</div>'
+      : "";
+
+    return (
+      '<div class="provider-info">' +
+      '<div class="provider-title">' +
+      providerTypeLabel(p) +
+      tags +
+      '<span class="provider-label">' +
+      escapeHtml(p.label) +
+      "</span>" +
+      "</div>" +
+      '<div class="provider-url">' +
+      escapeHtml(p.protocol === "TLS" ? p.serverName : p.url) +
+      "</div>" +
+      providerAddressesHtml(p) +
+      rulesNote +
+      "</div>" +
+      '<div class="provider-actions">' +
+      '<button class="btn-edit" data-id="' +
+      p.id +
+      '">' +
+      (p.editing ? "Done" : "Edit") +
+      "</button>" +
+      '<button class="btn-move btn-up" data-id="' +
+      p.id +
+      '" title="Move up" ' +
+      (j === 0 ? "disabled" : "") +
+      ">&#9650;</button>" +
+      '<button class="btn-move btn-down" data-id="' +
+      p.id +
+      '" title="Move down" ' +
+      (j === state.providers.length - 1 ? "disabled" : "") +
+      ">&#9660;</button>" +
+      '<button class="btn-remove" data-id="' +
+      p.id +
+      '" aria-label="Remove ' +
+      escapeHtml(p.label) +
+      '">&times;</button>' +
+      "</div>" +
+      (p.editing ? providerEditHtml(p) : "")
+    );
+  }
+
+  function bindProviderButtons(selector, handler) {
+    els.providerList.querySelectorAll(selector).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        handler(Number.parseInt(this.dataset.id, 10));
+      });
+    });
+  }
+
   function renderProviders() {
     els.providerEmpty.style.display =
       state.providers.length === 0 ? "" : "none";
 
-    const existing = els.providerList.querySelectorAll(".provider-item");
-    for (let i = 0; i < existing.length; i++) {
-      existing[i].remove();
-    }
+    els.providerList.querySelectorAll(".provider-item").forEach(function (el) {
+      el.remove();
+    });
 
-    for (let j = 0; j < state.providers.length; j++) {
-      const p = state.providers[j];
+    state.providers.forEach(function (p, j) {
       const li = document.createElement("li");
       li.className = "provider-item";
-
-      const typeLabel =
-        p.type === "custom"
-          ? '<span class="provider-type">Custom</span>'
-          : p.type === "imported"
-            ? '<span class="provider-type">Imported</span>'
-            : "";
-      const tags =
-        (p.protocol === "TLS" ? '<span class="provider-type">DoT</span>' : "") +
-        (p.allowFailover ? '<span class="provider-type">Failover</span>' : "");
-      const rulesNote = p.rawOnDemandRules
-        ? '<div class="provider-note">Custom on-demand rules kept as imported &mdash; Wi-Fi exclusions don\'t apply to this provider.</div>'
-        : "";
-      let addrHtml = "";
-      if (p.addresses.length > 0) {
-        addrHtml = '<div class="provider-addresses">';
-        for (let k = 0; k < p.addresses.length; k++) {
-          addrHtml += "<span>" + escapeHtml(p.addresses[k]) + "</span>";
-        }
-        addrHtml += "</div>";
-      }
-
-      li.innerHTML =
-        '<div class="provider-info">' +
-        '<div class="provider-title">' +
-        typeLabel +
-        tags +
-        '<span class="provider-label">' +
-        escapeHtml(p.label) +
-        "</span>" +
-        "</div>" +
-        '<div class="provider-url">' +
-        escapeHtml(p.protocol === "TLS" ? p.serverName : p.url) +
-        "</div>" +
-        addrHtml +
-        rulesNote +
-        "</div>" +
-        '<div class="provider-actions">' +
-        '<button class="btn-edit" data-id="' +
-        p.id +
-        '">' +
-        (p.editing ? "Done" : "Edit") +
-        "</button>" +
-        '<button class="btn-move btn-up" data-id="' +
-        p.id +
-        '" title="Move up" ' +
-        (j === 0 ? "disabled" : "") +
-        ">&#9650;</button>" +
-        '<button class="btn-move btn-down" data-id="' +
-        p.id +
-        '" title="Move down" ' +
-        (j === state.providers.length - 1 ? "disabled" : "") +
-        ">&#9660;</button>" +
-        '<button class="btn-remove" data-id="' +
-        p.id +
-        '" aria-label="Remove ' +
-        escapeHtml(p.label) +
-        '">&times;</button>' +
-        "</div>" +
-        (p.editing ? providerEditHtml(p) : "");
-
+      li.innerHTML = providerItemHtml(p, j);
       els.providerList.appendChild(li);
-    }
+    });
 
     renderSSIDList();
 
-    els.providerList.querySelectorAll(".btn-edit").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        toggleEdit(parseInt(this.getAttribute("data-id"), 10));
-      });
+    bindProviderButtons(".btn-edit", toggleEdit);
+    bindProviderButtons(".btn-up", function (id) {
+      moveProvider(id, -1);
     });
-    els.providerList.querySelectorAll(".btn-up").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        moveProvider(parseInt(this.getAttribute("data-id"), 10), -1);
-      });
+    bindProviderButtons(".btn-down", function (id) {
+      moveProvider(id, 1);
     });
-    els.providerList.querySelectorAll(".btn-down").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        moveProvider(parseInt(this.getAttribute("data-id"), 10), 1);
-      });
-    });
-    els.providerList.querySelectorAll(".btn-remove").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        removeProvider(parseInt(this.getAttribute("data-id"), 10));
-      });
-    });
+    bindProviderButtons(".btn-remove", removeProvider);
   }
 
   function addSSID() {
@@ -449,98 +452,111 @@
       });
   }
 
+  function ssidScopeProvidersHtml(s, i, eligible) {
+    let html = '<div class="ssid-scope-providers">';
+    for (const provider of eligible) {
+      const checked = s.providerIds.includes(provider.id) ? " checked" : "";
+      html +=
+        '<label><input type="checkbox" class="ssid-scope-check" data-index="' +
+        i +
+        '" data-id="' +
+        provider.id +
+        '"' +
+        checked +
+        "> " +
+        escapeHtml(provider.label) +
+        "</label>";
+    }
+    return html + "</div>";
+  }
+
+  function ssidScopeHtml(s, i, eligible) {
+    if (eligible.length <= 1 && s.providerIds === null) return "";
+    const scoped = s.providerIds !== null;
+    return (
+      '<div class="ssid-scope">' +
+      '<select class="ssid-scope-select" data-index="' +
+      i +
+      '" aria-label="Providers for ' +
+      escapeHtml(s.name) +
+      '">' +
+      '<option value="all"' +
+      (scoped ? "" : " selected") +
+      ">All providers</option>" +
+      '<option value="some"' +
+      (scoped ? " selected" : "") +
+      ">Only selected providers</option>" +
+      "</select>" +
+      (scoped ? ssidScopeProvidersHtml(s, i, eligible) : "") +
+      "</div>"
+    );
+  }
+
+  function ssidItemHtml(s, i, eligible) {
+    return (
+      '<li class="ssid-item">' +
+      '<div class="ssid-row">' +
+      '<span class="ssid-name">' +
+      escapeHtml(s.name) +
+      "</span>" +
+      '<button class="btn-remove" data-index="' +
+      i +
+      '" aria-label="Remove ' +
+      escapeHtml(s.name) +
+      '">&times;</button>' +
+      "</div>" +
+      ssidScopeHtml(s, i, eligible) +
+      "</li>"
+    );
+  }
+
+  function ssidEntryFor(el) {
+    return state.excludedSSIDs[Number.parseInt(el.dataset.index, 10)];
+  }
+
+  function onSSIDScopeChange() {
+    ssidEntryFor(this).providerIds =
+      this.value === "all"
+        ? null
+        : eligibleProviders().map(function (p) {
+            return p.id;
+          });
+    renderSSIDList();
+    clearPreview();
+  }
+
+  function onSSIDCheckChange() {
+    const entry = ssidEntryFor(this);
+    const id = Number.parseInt(this.dataset.id, 10);
+    entry.providerIds = entry.providerIds.filter(function (pid) {
+      return pid !== id;
+    });
+    if (this.checked) entry.providerIds.push(id);
+    clearPreview();
+  }
+
   function renderSSIDList() {
     if (state.excludedSSIDs.length === 0) {
       els.ssidList.innerHTML = "";
       return;
     }
     const eligible = eligibleProviders();
-    let html = "";
-    for (let i = 0; i < state.excludedSSIDs.length; i++) {
-      const s = state.excludedSSIDs[i];
-      let scopeHtml = "";
-      if (eligible.length > 1 || s.providerIds !== null) {
-        scopeHtml =
-          '<div class="ssid-scope">' +
-          '<select class="ssid-scope-select" data-index="' +
-          i +
-          '" aria-label="Providers for ' +
-          escapeHtml(s.name) +
-          '">' +
-          '<option value="all"' +
-          (s.providerIds === null ? " selected" : "") +
-          ">All providers</option>" +
-          '<option value="some"' +
-          (s.providerIds !== null ? " selected" : "") +
-          ">Only selected providers</option>" +
-          "</select>";
-        if (s.providerIds !== null) {
-          scopeHtml += '<div class="ssid-scope-providers">';
-          for (let j = 0; j < eligible.length; j++) {
-            const checked =
-              s.providerIds.indexOf(eligible[j].id) !== -1 ? " checked" : "";
-            scopeHtml +=
-              '<label><input type="checkbox" class="ssid-scope-check" data-index="' +
-              i +
-              '" data-id="' +
-              eligible[j].id +
-              '"' +
-              checked +
-              "> " +
-              escapeHtml(eligible[j].label) +
-              "</label>";
-          }
-          scopeHtml += "</div>";
-        }
-        scopeHtml += "</div>";
-      }
-      html +=
-        '<li class="ssid-item">' +
-        '<div class="ssid-row">' +
-        '<span class="ssid-name">' +
-        escapeHtml(s.name) +
-        "</span>" +
-        '<button class="btn-remove" data-index="' +
-        i +
-        '" aria-label="Remove ' +
-        escapeHtml(s.name) +
-        '">&times;</button>' +
-        "</div>" +
-        scopeHtml +
-        "</li>";
-    }
-    els.ssidList.innerHTML = html;
+    els.ssidList.innerHTML = state.excludedSSIDs
+      .map(function (s, i) {
+        return ssidItemHtml(s, i, eligible);
+      })
+      .join("");
 
     els.ssidList.querySelectorAll(".btn-remove").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        removeSSID(parseInt(this.getAttribute("data-index"), 10));
+        removeSSID(Number.parseInt(this.dataset.index, 10));
       });
     });
     els.ssidList.querySelectorAll(".ssid-scope-select").forEach(function (sel) {
-      sel.addEventListener("change", function () {
-        const entry =
-          state.excludedSSIDs[parseInt(this.getAttribute("data-index"), 10)];
-        entry.providerIds =
-          this.value === "all"
-            ? null
-            : eligibleProviders().map(function (p) {
-                return p.id;
-              });
-        renderSSIDList();
-        clearPreview();
-      });
+      sel.addEventListener("change", onSSIDScopeChange);
     });
     els.ssidList.querySelectorAll(".ssid-scope-check").forEach(function (box) {
-      box.addEventListener("change", function () {
-        const entry =
-          state.excludedSSIDs[parseInt(this.getAttribute("data-index"), 10)];
-        const id = parseInt(this.getAttribute("data-id"), 10);
-        entry.providerIds = entry.providerIds.filter(function (pid) {
-          return pid !== id;
-        });
-        if (this.checked) entry.providerIds.push(id);
-        clearPreview();
-      });
+      box.addEventListener("change", onSSIDCheckChange);
     });
   }
 
@@ -755,9 +771,9 @@
 
   function highlightXml(xml) {
     const escaped = xml
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
 
     return escaped
       .replace(/(&lt;\?xml[^?]*\?&gt;)/g, '<span class="xml-decl">$1</span>')
