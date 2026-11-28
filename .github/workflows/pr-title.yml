@@ -1,0 +1,27 @@
+name: PR title
+
+# The release workflow derives versions from Conventional Commit subjects.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions: {}
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  conventional-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the title follows Conventional Commits
+        shell: bash
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|perf|revert|build|chore|ci|docs|refactor|style|test)(\([a-z0-9._/-]+\))?!?: [^[:upper:][:space:]](.*[^[:space:]])?$'
+          if [[ ! "$TITLE" =~ $pattern || "$TITLE" == *. ]]; then
+            echo "::error::Use 'type: summary' or 'type(scope): summary' with a lowercase start and no trailing period."
+            exit 1
+          fi
